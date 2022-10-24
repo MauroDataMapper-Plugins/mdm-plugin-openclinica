@@ -1,0 +1,14 @@
+dependencies {
+
+    runtimeOnly "io.methvin:directory-watcher", {
+        exclude group: 'com.google.guava', module: 'guava'
+    }
+
+    testImplementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-testing-framework', version: mdmCoreVersion
+
+    // Postgres database
+    runtimeOnly group: 'org.flywaydb', name: 'flyway-core'
+    runtimeOnly "org.hibernate:hibernate-jcache"
+    runtimeOnly group: 'org.ehcache', name: 'ehcache'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql'
+}
