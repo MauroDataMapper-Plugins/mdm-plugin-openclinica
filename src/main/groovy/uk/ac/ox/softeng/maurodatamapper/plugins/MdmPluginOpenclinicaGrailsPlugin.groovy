@@ -20,7 +20,7 @@ package uk.ac.ox.softeng.maurodatamapper.plugins
 
 import grails.plugins.Plugin
 
-class MdmPluginTemplateGrailsPlugin extends Plugin {
+class MdmPluginOpenclinicaGrailsPlugin extends Plugin {
 
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = '5.1.7 > *'
