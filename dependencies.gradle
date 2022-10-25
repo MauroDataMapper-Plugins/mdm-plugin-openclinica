@@ -1,10 +1,14 @@
 dependencies {
 
+    implementation group: 'org.apache.poi', name: 'poi', version: poiVersion
+    implementation group: 'org.apache.poi', name: 'poi-ooxml', version: poiVersion
+
     runtimeOnly "io.methvin:directory-watcher", {
         exclude group: 'com.google.guava', module: 'guava'
     }
 
-    testImplementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-testing-framework', version: mdmCoreVersion
+//    testImplementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-testing-framework', version: mdmCoreVersion
+    testImplementation project(':mdm-testing-framework')
 
     // Postgres database
     runtimeOnly group: 'org.flywaydb', name: 'flyway-core'
