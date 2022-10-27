@@ -1,0 +1,58 @@
+[
+  {
+    "sectionName": "Section Properties",
+    "fields": [
+      {
+        "fieldName": "Section Label",
+        "metadataPropertyName": "section_label",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": "\\S{0,255}"
+      },
+      {
+        "fieldName": "Section Title",
+        "metadataPropertyName": "section_title",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Subtitle",
+        "metadataPropertyName": "subtitle",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Instructions",
+        "metadataPropertyName": "instructions",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Page Number",
+        "metadataPropertyName": "page_number",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": ".{0,5}"
+      },
+      {
+        "fieldName": "Parent Section",
+        "metadataPropertyName": "parent_section",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": "\\S{0,255}"
+      }
+    ]
+  }
+]
