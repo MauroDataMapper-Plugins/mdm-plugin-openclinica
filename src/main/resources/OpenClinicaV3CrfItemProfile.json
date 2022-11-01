@@ -3,6 +3,48 @@
     "sectionName": "Item Properties",
     "fields": [
       {
+        "fieldName": "Item Name",
+        "metadataPropertyName": "item_name",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": "\\S{0,255}"
+      },
+      {
+        "fieldName": "Description Label",
+        "metadataPropertyName": "description_label",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Left Item Text",
+        "metadataPropertyName": "left_item_text",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Units",
+        "metadataPropertyName": "units",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": ".{0,64}"
+      },
+      {
+        "fieldName": "Right Item Text",
+        "metadataPropertyName": "right_item_text",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
         "fieldName": "Section Label",
         "metadataPropertyName": "section_label",
         "minMultiplicity": 1,
@@ -12,27 +54,46 @@
         "regularExpression": "\\S{0,255}"
       },
       {
-        "fieldName": "Section Title",
-        "metadataPropertyName": "section_title",
+        "fieldName": "Group Label",
+        "metadataPropertyName": "group_label",
         "minMultiplicity": 1,
         "maxMultiplicity": 1,
         "dataType": "string",
-        "derived": false
+        "derived": false,
+        "regularExpression": "\\S{0,255}"
       },
       {
-        "fieldName": "Subtitle",
-        "metadataPropertyName": "subtitle",
+        "fieldName": "Header",
+        "metadataPropertyName": "header",
         "minMultiplicity": 0,
         "maxMultiplicity": 1,
         "dataType": "string",
         "derived": false
       },
       {
-        "fieldName": "Instructions",
-        "metadataPropertyName": "instructions",
+        "fieldName": "Subheader",
+        "metadataPropertyName": "subheader",
         "minMultiplicity": 0,
         "maxMultiplicity": 1,
         "dataType": "string",
+        "derived": false,
+        "regularExpression": ".{0,240}"
+      },
+      {
+        "fieldName": "Parent Item",
+        "metadataPropertyName": "parent_item",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": "\\S{0,255}"
+      },
+      {
+        "fieldName": "Column Number",
+        "metadataPropertyName": "column_number",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "int",
         "derived": false
       },
       {
@@ -42,16 +103,171 @@
         "maxMultiplicity": 1,
         "dataType": "string",
         "derived": false,
-        "regularExpression": ".{0,5}"
+        "regularExpression": "\\w{0,5}"
       },
       {
-        "fieldName": "Parent Section",
-        "metadataPropertyName": "parent_section",
+        "fieldName": "Question Number",
+        "metadataPropertyName": "question_number",
         "minMultiplicity": 0,
         "maxMultiplicity": 1,
         "dataType": "string",
         "derived": false,
-        "regularExpression": "\\S{0,255}"
+        "regularExpression": "\\w{0,20}"
+      },
+      {
+        "fieldName": "Response Type",
+        "metadataPropertyName": "response_type",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "text",
+          "textarea",
+          "single-select",
+          "radio",
+          "multi-select",
+          "checkbox",
+          "calculation",
+          "group-calculation",
+          "file",
+          "instant-calculation"
+        ],
+        "derived": false
+      },
+      {
+        "fieldName": "Response Label",
+        "metadataPropertyName": "response_label",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": "\\w{0,80}"
+      },
+      {
+        "fieldName": "Response Options Text",
+        "metadataPropertyName": "response_options_text",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Response Values or Calculations",
+        "metadataPropertyName": "response_values_or_calculations",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Response Layout",
+        "metadataPropertyName": "response_layout",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "",
+          "Horizontal",
+          "Vertical"
+        ],
+        "derived": false
+      },
+      {
+        "fieldName": "Default Value",
+        "metadataPropertyName": "default_value",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Data Type",
+        "metadataPropertyName": "data_type",
+        "minMultiplicity": 1,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "ST",
+          "INT",
+          "REAL",
+          "DATE",
+          "PDATE",
+          "FILE"
+        ],
+        "derived": false
+      },
+      {
+        "fieldName": "Width/Decimal",
+        "metadataPropertyName": "width_decimal",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
+      },
+      {
+        "fieldName": "Validation",
+        "metadataPropertyName": "validation",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": ".{0,1000}"
+      },
+      {
+        "fieldName": "Validation Error Message",
+        "metadataPropertyName": "validation_error_message",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false,
+        "regularExpression": ".{0,255}"
+      },
+      {
+        "fieldName": "Protected Health Information",
+        "metadataPropertyName": "phi",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "",
+          "0",
+          "1"
+        ],
+        "derived": false
+      },
+      {
+        "fieldName": "Required",
+        "metadataPropertyName": "required",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "",
+          "0",
+          "1"
+        ],
+        "derived": false
+      },
+      {
+        "fieldName": "Item Display Status",
+        "metadataPropertyName": "item_display_status",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "enumeration",
+        "allowedValues": [
+          "",
+          "SHOW",
+          "HIDE"
+        ],
+        "derived": false
+      },
+      {
+        "fieldName": "Simple Conditional Display",
+        "metadataPropertyName": "simple_conditional_display",
+        "minMultiplicity": 0,
+        "maxMultiplicity": 1,
+        "dataType": "string",
+        "derived": false
       }
     ]
   }

@@ -21,21 +21,23 @@ package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.importer
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiInternalException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiNotYetImplementedException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiUnauthorizedException
-import uk.ac.ox.softeng.maurodatamapper.core.facet.Metadata
-import uk.ac.ox.softeng.maurodatamapper.core.model.CatalogueItem
 import uk.ac.ox.softeng.maurodatamapper.core.model.facet.MetadataAware
 import uk.ac.ox.softeng.maurodatamapper.core.provider.importer.parameter.FileParameter
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModel
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.DataModelType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataClass
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
+import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
 import uk.ac.ox.softeng.maurodatamapper.plugins.excel.datamodel.provider.importer.SimpleExcelDataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfDefaultDataTypeProviderService
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.group.OpenClinicaV3CrfGroupProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.item.OpenClinicaV3CrfItemProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.section.OpenClinicaV3CrfSectionProfileProviderService
-import uk.ac.ox.softeng.maurodatamapper.profile.domain.ProfileField
-import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -56,6 +58,11 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                                                                instructions : 'INSTRUCTIONS',
                                                                pageNumber   : 'PAGE_NUMBER',
                                                                parentSection: 'PARENT_SECTION']
+    static final Map<String, String> GROUPS_SHEET_COLUMNS = [groupLabel        : 'GROUP_LABEL',
+                                                             groupLayout       : 'GROUP_LAYOUT',
+                                                             groupRepeatNumber : 'GROUP_REPEAT_NUMBER',
+                                                             groupRepeatMax    : 'GROUP_REPEAT_MAX',
+                                                             groupDisplayStatus: 'GROUP_DISPLAY_STATUS']
     static final Map<String, String> ITEMS_SHEET_COLUMNS = [itemName                    : 'ITEM_NAME',
                                                             descriptionLabel            : 'DESCRIPTION_LABEL',
                                                             leftItemText                : 'LEFT_ITEM_TEXT',
@@ -85,9 +92,13 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                                                             simpleConditionalDisplay    : 'SIMPLE_CONDITIONAL_DISPLAY']
 
     DataModelService dataModelService
+    DataTypeService dataTypeService
     SimpleExcelDataModelImporterProviderService simpleExcelDataModelImporterProviderService
     OpenClinicaV3CrfProfileProviderService openClinicaV3CrfProfileProviderService
     OpenClinicaV3CrfSectionProfileProviderService openClinicaV3CrfSectionProfileProviderService
+    OpenClinicaV3CrfGroupProfileProviderService openClinicaV3CrfGroupProfileProviderService
+    OpenClinicaV3CrfItemProfileProviderService openClinicaV3CrfItemProfileProviderService
+    OpenClinicaV3CrfDefaultDataTypeProviderService openClinicaV3CrfDefaultDataTypeProviderService
 
     @Override
     String getDisplayName() {
@@ -124,7 +135,6 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
         simpleExcelDataModelImporterProviderService.loadWorkbookFromInputStream(importFile.fileName, importFile.inputStream).withCloseable {Workbook workbook ->
             // Import CRF as DataModel
             Sheet crfSheet = workbook.getSheet('CRF')
-
             if (!crfSheet) {
                 throw new ApiInternalException('OC302', 'The CRF file must include a sheet "CRF"')
             }
@@ -133,11 +143,11 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
             Map<String, String> crfValues = crfSheetValues.findAll {it.crfName && it.version}.last()
 
             dataModel = new DataModel(label: crfValues.crfName, type: DataModelType.DATA_ASSET)
+            dataTypeService.addDefaultListOfDataTypesToDataModel(dataModel, openClinicaV3CrfDefaultDataTypeProviderService.defaultListOfDataTypes)
             addMetadataFromColumnValues(dataModel, openClinicaV3CrfProfileProviderService, CRF_SHEET_COLUMNS, crfValues)
 
             // Import Sections as tree of Data Classes
             Sheet sectionsSheet = workbook.getSheet('Sections')
-
             if (!sectionsSheet) {
                 throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Sections"')
             }
@@ -161,7 +171,50 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
             }
 
             // Import Items as Data Elements and Groups as optional nested Data Classes
+            Sheet groupsSheet = workbook.getSheet('Groups')
+            if (!groupsSheet) {
+                throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Groups"')
+            }
 
+            Sheet itemsSheet = workbook.getSheet('Items')
+            if (!itemsSheet) {
+                throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Items"')
+            }
+
+            List<Map<String, String>> itemsSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(ITEMS_SHEET_COLUMNS, itemsSheet)
+            List<Map<String, String>> groupsSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(GROUPS_SHEET_COLUMNS, groupsSheet)
+
+            List<DataClass> groups = []
+            DataType ocStringDataType = dataModel.dataTypes.find {it.label == 'ST'}
+            itemsSheetValues.each {Map<String, String> itemValues ->
+                DataElement item = new DataElement(label: itemValues.itemName, description: itemValues.descriptionLabel,
+                                                   dataType: dataModel.dataTypes.find {it.label == itemValues.dataType} ?: ocStringDataType)
+                    .tap {DataElement dataElement ->
+                        addMetadataFromColumnValues(dataElement, openClinicaV3CrfItemProfileProviderService, ITEMS_SHEET_COLUMNS, itemValues)
+                    }
+                DataClass parentClass
+                if (itemValues.groupLabel) {
+                    parentClass = groups.find {DataClass group ->
+                        group.label ==~ /${itemValues.groupLabel}( \[\d+\])?/ && sections.find {DataClass section ->
+                            section.label == itemValues.sectionLabel && section.dataClasses?.contains(group)
+                        }
+                    }
+                    if (!parentClass) {
+                        DataClass sectionClass = sections.find {it.label == itemValues.sectionLabel}
+                        int duplicates = (sections + groups).findAll {it.label ==~ /${itemValues.groupLabel}( \[\d+\])?/}.size()
+                        String groupClassLabel = duplicates ? "${itemValues.groupLabel} [$duplicates]" : itemValues.groupLabel
+                        parentClass = new DataClass(label: groupClassLabel, description: itemValues.groupHeader)
+                        Map<String, String> groupValues = groupsSheetValues.find {Map<String, String> groupValues -> groupValues.groupLabel == itemValues.groupLabel}
+                        addMetadataFromColumnValues(parentClass, openClinicaV3CrfGroupProfileProviderService, GROUPS_SHEET_COLUMNS, groupValues)
+                        groups << parentClass
+                        sectionClass.addToDataClasses(parentClass)
+                    }
+                } else {
+                    parentClass = sections.find {it.label == itemValues.sectionLabel}
+                }
+
+                parentClass.addToDataElements(item)
+            }
         }
 
         dataModelService.checkImportedDataModelAssociations(currentUser, dataModel)

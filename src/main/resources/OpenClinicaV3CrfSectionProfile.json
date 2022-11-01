@@ -42,7 +42,7 @@
         "maxMultiplicity": 1,
         "dataType": "string",
         "derived": false,
-        "regularExpression": ".{0,5}"
+        "regularExpression": "\\w{0,5}"
       },
       {
         "fieldName": "Parent Section",
