@@ -155,8 +155,8 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
             List<Map<String, String>> sectionsSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(SECTIONS_SHEET_COLUMNS, sectionsSheet)
 
             List<DataClass> sections = []
-            sectionsSheetValues.each {Map<String, String> sectionValues ->
-                sections << new DataClass(label: sectionValues.sectionLabel, description: sectionValues.sectionTitle).tap {DataClass dataClass ->
+            sectionsSheetValues.eachWithIndex {Map<String, String> sectionValues, Integer i ->
+                sections << new DataClass(label: sectionValues.sectionLabel, description: sectionValues.sectionTitle, idx: i).tap {DataClass dataClass ->
                     addMetadataFromColumnValues(dataClass, openClinicaV3CrfSectionProfileProviderService, SECTIONS_SHEET_COLUMNS, sectionValues)
                 }
             }
@@ -186,24 +186,22 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
 
             List<DataClass> groups = []
             DataType ocStringDataType = dataModel.dataTypes.find {it.label == 'ST'}
-            itemsSheetValues.each {Map<String, String> itemValues ->
+            itemsSheetValues.eachWithIndex {Map<String, String> itemValues, Integer i ->
                 DataElement item = new DataElement(label: itemValues.itemName, description: itemValues.descriptionLabel,
-                                                   dataType: dataModel.dataTypes.find {it.label == itemValues.dataType} ?: ocStringDataType)
+                                                   dataType: dataModel.dataTypes.find {it.label == itemValues.dataType} ?: ocStringDataType, idx: i)
                     .tap {DataElement dataElement ->
                         addMetadataFromColumnValues(dataElement, openClinicaV3CrfItemProfileProviderService, ITEMS_SHEET_COLUMNS, itemValues)
                     }
                 DataClass parentClass
                 if (itemValues.groupLabel) {
                     parentClass = groups.find {DataClass group ->
-                        group.label ==~ /${itemValues.groupLabel}( \[\d+\])?/ && sections.find {DataClass section ->
+                        group.label == itemValues.groupLabel && sections.find {DataClass section ->
                             section.label == itemValues.sectionLabel && section.dataClasses?.contains(group)
                         }
                     }
                     if (!parentClass) {
                         DataClass sectionClass = sections.find {it.label == itemValues.sectionLabel}
-                        int duplicates = (sections + groups).findAll {it.label ==~ /${itemValues.groupLabel}( \[\d+\])?/}.size()
-                        String groupClassLabel = duplicates ? "${itemValues.groupLabel} [$duplicates]" : itemValues.groupLabel
-                        parentClass = new DataClass(label: groupClassLabel, description: itemValues.groupHeader)
+                        parentClass = new DataClass(label: itemValues.groupLabel, description: itemValues.groupHeader, idx: i)
                         Map<String, String> groupValues = groupsSheetValues.find {Map<String, String> groupValues -> groupValues.groupLabel == itemValues.groupLabel}
                         addMetadataFromColumnValues(parentClass, openClinicaV3CrfGroupProfileProviderService, GROUPS_SHEET_COLUMNS, groupValues)
                         groups << parentClass
