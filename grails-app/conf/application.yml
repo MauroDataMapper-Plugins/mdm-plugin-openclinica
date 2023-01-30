@@ -15,7 +15,7 @@ maurodatamapper:
 grails:
     profile: rest-api-plugin
     codegen:
-        defaultPackage: uk.ac.ox.softeng.maurodatamapper.plugins.plugin_name
+        defaultPackage: uk.ac.ox.softeng.maurodatamapper.plugins.openclinica
     gorm:
         reactor:
             # Whether to translate GORM events into Reactor events
@@ -146,8 +146,8 @@ environments:
     test:
         spring.flyway.enabled: false
         database:
-            name: 'mpt'
-            creation: 'CREATE SCHEMA IF NOT EXISTS CORE'
+            name: 'mpe'
+            creation: 'CREATE SCHEMA IF NOT EXISTS core\;CREATE SCHEMA IF NOT EXISTS datamodel'
         dataSource:
             driverClassName: org.h2.Driver
             dialect: org.hibernate.dialect.H2Dialect

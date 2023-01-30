@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica
+package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3
 
 
 import grails.plugins.Plugin

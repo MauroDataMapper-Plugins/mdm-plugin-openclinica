@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.workbook
+package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.workbook
 
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiBadRequestException
 import uk.ac.ox.softeng.maurodatamapper.api.exception.ApiException

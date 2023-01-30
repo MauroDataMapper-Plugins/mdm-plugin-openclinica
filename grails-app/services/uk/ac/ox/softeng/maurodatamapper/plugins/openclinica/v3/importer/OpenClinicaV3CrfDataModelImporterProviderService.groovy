@@ -37,7 +37,8 @@ import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.group.OpenClinicaV3CrfGroupProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.item.OpenClinicaV3CrfItemProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.section.OpenClinicaV3CrfSectionProfileProviderService
-import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.workbook.WorkbookHandler
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.importer.parameters.OpenClinicaV3CrfDataModelImporterParameters
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.workbook.WorkbookHandler
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -45,7 +46,7 @@ import uk.ac.ox.softeng.maurodatamapper.security.User
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 
-class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporterProviderService<DataModelFileImporterProviderServiceParameters> {
+class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporterProviderService<OpenClinicaV3CrfDataModelImporterParameters> {
 
     static final String CONTENT_TYPE = 'application/vnd.ms-excel'
     static final Map<String, String> CRF_SHEET_COLUMNS = [crfName           : 'CRF_NAME',
@@ -127,7 +128,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
     }
 
     @Override
-    DataModel importModel(User currentUser, DataModelFileImporterProviderServiceParameters importerParameters) {
+    DataModel importModel(User currentUser, OpenClinicaV3CrfDataModelImporterParameters importerParameters) {
         if (!currentUser) throw new ApiUnauthorizedException('OC301', 'User must be logged in to import model')
         log.info('Importing {} as {}', importerParameters.importFile.fileName, currentUser.emailAddress)
         FileParameter importFile = importerParameters.importFile
@@ -234,7 +235,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
     }
 
     @Override
-    List<DataModel> importModels(User currentUser, DataModelFileImporterProviderServiceParameters importerParameters) {
+    List<DataModel> importModels(User currentUser, OpenClinicaV3CrfDataModelImporterParameters importerParameters) {
         throw new ApiNotYetImplementedException('OC304', 'importModels')
     }
 }

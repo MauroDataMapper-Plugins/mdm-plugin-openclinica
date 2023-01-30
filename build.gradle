@@ -72,7 +72,7 @@ dependencies {
     profile "org.grails.profiles:rest-api-plugin"
     developmentOnly "org.springframework.boot:spring-boot-starter-tomcat"
     runtimeOnly "org.glassfish.web:el-impl:2.2.1-b05"
-    testRuntimeOnly "com.h2database:h2"
+    integrationTestRuntimeOnly "com.h2database:h2"
     runtimeOnly "org.apache.tomcat:tomcat-jdbc"
     runtimeOnly "javax.xml.bind:jaxb-api:$jaxbApiVersion"
     testImplementation "io.micronaut:micronaut-inject-groovy"
@@ -106,10 +106,13 @@ bootJar.enabled = false
 grails {
     plugins {
 //        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-core', version: mdmCoreVersion
-        implementation project(':mdm-core')
-        implementation project(':mdm-plugin-datamodel')
-        implementation project(':mdm-plugin-excel')
-        implementation project(':mdm-plugin-profile')
+        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-core', version: mdmCoreVersion
+        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-plugin-datamodel', version: mdmCoreVersion
+        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-plugin-profile', version: mdmCoreVersion
+//        implementation project(':mdm-core')
+//        implementation project(':mdm-plugin-datamodel')
+//        implementation project(':mdm-plugin-excel')
+//        implementation project(':mdm-plugin-profile')
     }
 }
 
