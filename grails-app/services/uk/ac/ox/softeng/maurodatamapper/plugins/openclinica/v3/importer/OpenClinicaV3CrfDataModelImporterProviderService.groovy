@@ -32,12 +32,12 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
-import uk.ac.ox.softeng.maurodatamapper.plugins.excel.datamodel.provider.importer.SimpleExcelDataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfDefaultDataTypeProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.group.OpenClinicaV3CrfGroupProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.item.OpenClinicaV3CrfItemProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.section.OpenClinicaV3CrfSectionProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.workbook.WorkbookHandler
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -93,12 +93,13 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
 
     DataModelService dataModelService
     DataTypeService dataTypeService
-    SimpleExcelDataModelImporterProviderService simpleExcelDataModelImporterProviderService
     OpenClinicaV3CrfProfileProviderService openClinicaV3CrfProfileProviderService
     OpenClinicaV3CrfSectionProfileProviderService openClinicaV3CrfSectionProfileProviderService
     OpenClinicaV3CrfGroupProfileProviderService openClinicaV3CrfGroupProfileProviderService
     OpenClinicaV3CrfItemProfileProviderService openClinicaV3CrfItemProfileProviderService
     OpenClinicaV3CrfDefaultDataTypeProviderService openClinicaV3CrfDefaultDataTypeProviderService
+
+    WorkbookHandler workbookHandler = new WorkbookHandler()
 
     @Override
     String getDisplayName() {
@@ -132,14 +133,14 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
         FileParameter importFile = importerParameters.importFile
 
         DataModel dataModel
-        simpleExcelDataModelImporterProviderService.loadWorkbookFromInputStream(importFile.fileName, importFile.inputStream).withCloseable {Workbook workbook ->
+        workbookHandler.loadWorkbookFromInputStream(importFile.fileName, importFile.inputStream).withCloseable {Workbook workbook ->
             // Import CRF as DataModel
             Sheet crfSheet = workbook.getSheet('CRF')
             if (!crfSheet) {
                 throw new ApiInternalException('OC302', 'The CRF file must include a sheet "CRF"')
             }
 
-            List<Map<String, String>> crfSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(CRF_SHEET_COLUMNS, crfSheet)
+            List<Map<String, String>> crfSheetValues = workbookHandler.getSheetValues(CRF_SHEET_COLUMNS, crfSheet)
             Map<String, String> crfValues = crfSheetValues.findAll {it.crfName && it.version}.last()
 
             dataModel = new DataModel(label: crfValues.crfName, type: DataModelType.DATA_ASSET)
@@ -152,7 +153,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Sections"')
             }
 
-            List<Map<String, String>> sectionsSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(SECTIONS_SHEET_COLUMNS, sectionsSheet)
+            List<Map<String, String>> sectionsSheetValues = workbookHandler.getSheetValues(SECTIONS_SHEET_COLUMNS, sectionsSheet)
 
             List<DataClass> sections = []
             sectionsSheetValues.eachWithIndex {Map<String, String> sectionValues, Integer i ->
@@ -181,8 +182,8 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Items"')
             }
 
-            List<Map<String, String>> itemsSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(ITEMS_SHEET_COLUMNS, itemsSheet)
-            List<Map<String, String>> groupsSheetValues = simpleExcelDataModelImporterProviderService.getSheetValues(GROUPS_SHEET_COLUMNS, groupsSheet)
+            List<Map<String, String>> itemsSheetValues = workbookHandler.getSheetValues(ITEMS_SHEET_COLUMNS, itemsSheet)
+            List<Map<String, String>> groupsSheetValues = workbookHandler.getSheetValues(GROUPS_SHEET_COLUMNS, groupsSheet)
 
             List<DataClass> groups = []
             DataType ocStringDataType = dataModel.dataTypes.find {it.label == 'ST'}
