@@ -106,13 +106,11 @@ bootJar.enabled = false
 grails {
     plugins {
 //        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-core', version: mdmCoreVersion
-        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-core', version: mdmCoreVersion
-        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-plugin-datamodel', version: mdmCoreVersion
-        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-plugin-profile', version: mdmCoreVersion
-//        implementation project(':mdm-core')
-//        implementation project(':mdm-plugin-datamodel')
-//        implementation project(':mdm-plugin-excel')
-//        implementation project(':mdm-plugin-profile')
+//        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-plugin-datamodel', version: mdmCoreVersion
+//        implementation group: 'uk.ac.ox.softeng.maurodatamapper', name: 'mdm-plugin-profile', version: mdmCoreVersion
+        implementation project(':mdm-core')
+        implementation project(':mdm-plugin-datamodel')
+        implementation project(':mdm-plugin-profile')
     }
 }
 

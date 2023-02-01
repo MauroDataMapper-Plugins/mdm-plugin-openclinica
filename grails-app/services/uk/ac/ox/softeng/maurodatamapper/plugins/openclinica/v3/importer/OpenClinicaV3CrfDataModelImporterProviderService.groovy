@@ -61,6 +61,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                                                                parentSection: 'PARENT_SECTION']
     static final Map<String, String> GROUPS_SHEET_COLUMNS = [groupLabel        : 'GROUP_LABEL',
                                                              groupLayout       : 'GROUP_LAYOUT',
+                                                             groupHeader       : 'GROUP_HEADER',
                                                              groupRepeatNumber : 'GROUP_REPEAT_NUMBER',
                                                              groupRepeatMax    : 'GROUP_REPEAT_MAX',
                                                              groupDisplayStatus: 'GROUP_DISPLAY_STATUS']
