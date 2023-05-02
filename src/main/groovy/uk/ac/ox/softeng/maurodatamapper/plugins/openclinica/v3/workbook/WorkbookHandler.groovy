@@ -51,8 +51,7 @@ class WorkbookHandler {
             String headerText = getCellValueAsString(row.getCell(col))
             boolean found = false
             intendedColumnMappings.each {columnName, regex ->
-                if ((headerText.replace('*', '').toLowerCase().trim() ==~ regex.toLowerCase().trim()) ||
-                    (headerText == 'GROUP_REPEAT_NUM' && regex == 'GROUP_REPEAT_NUMBER')) {
+                if (headerText.replace('*', '').toLowerCase().trim() ==~ regex.toLowerCase().trim()) {
                     expectedSheetColumns[columnName] = col
                     found = true
                 }

@@ -32,6 +32,7 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.parameter.DataModelFileImporterProviderServiceParameters
+import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.ColumnHeaders
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfDefaultDataTypeProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.group.OpenClinicaV3CrfGroupProfileProviderService
@@ -49,49 +50,6 @@ import org.apache.poi.ss.usermodel.Workbook
 class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporterProviderService<OpenClinicaV3CrfDataModelImporterParameters> {
 
     static final String CONTENT_TYPE = 'application/vnd.ms-excel'
-    static final Map<String, String> CRF_SHEET_COLUMNS = [crfName           : 'CRF_NAME',
-                                                          version           : 'VERSION',
-                                                          versionDescription: 'VERSION_DESCRIPTION',
-                                                          revisionNotes     : 'REVISION_NOTES']
-    static final Map<String, String> SECTIONS_SHEET_COLUMNS = [sectionLabel : 'SECTION_LABEL',
-                                                               sectionTitle : 'SECTION_TITLE',
-                                                               subtitle     : 'SUBTITLE',
-                                                               instructions : 'INSTRUCTIONS',
-                                                               pageNumber   : 'PAGE_NUMBER',
-                                                               parentSection: 'PARENT_SECTION']
-    static final Map<String, String> GROUPS_SHEET_COLUMNS = [groupLabel        : 'GROUP_LABEL',
-                                                             groupLayout       : 'GROUP_LAYOUT',
-                                                             groupHeader       : 'GROUP_HEADER',
-                                                             groupRepeatNumber : 'GROUP_REPEAT_NUMBER',
-                                                             groupRepeatMax    : 'GROUP_REPEAT_MAX',
-                                                             groupDisplayStatus: 'GROUP_DISPLAY_STATUS']
-    static final Map<String, String> ITEMS_SHEET_COLUMNS = [itemName                    : 'ITEM_NAME',
-                                                            descriptionLabel            : 'DESCRIPTION_LABEL',
-                                                            leftItemText                : 'LEFT_ITEM_TEXT',
-                                                            units                       : 'UNITS',
-                                                            rightItemText               : 'RIGHT_ITEM_TEXT',
-                                                            sectionLabel                : 'SECTION_LABEL',
-                                                            groupLabel                  : 'GROUP_LABEL',
-                                                            header                      : 'HEADER',
-                                                            subheader                   : 'SUBHEADER',
-                                                            parentItem                  : 'PARENT_ITEM',
-                                                            columnNumber                : 'COLUMN_NUMBER',
-                                                            pageNumber                  : 'PAGE_NUMBER',
-                                                            questionNumber              : 'QUESTION_NUMBER',
-                                                            responseType                : 'RESPONSE_TYPE',
-                                                            responseLabel               : 'RESPONSE_LABEL',
-                                                            responseOptionsText         : 'RESPONSE_OPTIONS_TEXT',
-                                                            responseValuesOrCalculations: 'RESPONSE_VALUES_OR_CALCULATIONS',
-                                                            responseLayout              : 'RESPONSE_LAYOUT',
-                                                            defaultValue                : 'DEFAULT_VALUE',
-                                                            dataType                    : 'DATA_TYPE',
-                                                            widthDecimal                : 'WIDTH_DECIMAL',
-                                                            validation                  : 'VALIDATION',
-                                                            validationErrorMessage      : 'VALIDATION_ERROR_MESSAGE',
-                                                            phi                         : 'PHI',
-                                                            required                    : 'REQUIRED',
-                                                            itemDisplayStatus           : 'ITEM_DISPLAY_STATUS',
-                                                            simpleConditionalDisplay    : 'SIMPLE_CONDITIONAL_DISPLAY']
 
     DataModelService dataModelService
     DataTypeService dataTypeService
@@ -142,12 +100,12 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 throw new ApiInternalException('OC302', 'The CRF file must include a sheet "CRF"')
             }
 
-            List<Map<String, String>> crfSheetValues = workbookHandler.getSheetValues(CRF_SHEET_COLUMNS, crfSheet)
+            List<Map<String, String>> crfSheetValues = workbookHandler.getSheetValues(ColumnHeaders.CRF_SHEET_COLUMN_PATTERNS, crfSheet)
             Map<String, String> crfValues = crfSheetValues.findAll {it.crfName && it.version}.last()
 
             dataModel = new DataModel(label: crfValues.crfName, type: DataModelType.DATA_ASSET)
             dataTypeService.addDefaultListOfDataTypesToDataModel(dataModel, openClinicaV3CrfDefaultDataTypeProviderService.defaultListOfDataTypes)
-            addMetadataFromColumnValues(dataModel, openClinicaV3CrfProfileProviderService, CRF_SHEET_COLUMNS, crfValues)
+            addMetadataFromColumnValues(dataModel, openClinicaV3CrfProfileProviderService, ColumnHeaders.CRF_SHEET_COLUMNS, crfValues)
 
             // Import Sections as tree of Data Classes
             Sheet sectionsSheet = workbook.getSheet('Sections')
@@ -155,12 +113,12 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Sections"')
             }
 
-            List<Map<String, String>> sectionsSheetValues = workbookHandler.getSheetValues(SECTIONS_SHEET_COLUMNS, sectionsSheet)
+            List<Map<String, String>> sectionsSheetValues = workbookHandler.getSheetValues(ColumnHeaders.SECTIONS_SHEET_COLUMN_PATTERNS, sectionsSheet)
 
             List<DataClass> sections = []
             sectionsSheetValues.eachWithIndex {Map<String, String> sectionValues, Integer i ->
                 sections << new DataClass(label: sectionValues.sectionLabel, description: sectionValues.sectionTitle, idx: i).tap {DataClass dataClass ->
-                    addMetadataFromColumnValues(dataClass, openClinicaV3CrfSectionProfileProviderService, SECTIONS_SHEET_COLUMNS, sectionValues)
+                    addMetadataFromColumnValues(dataClass, openClinicaV3CrfSectionProfileProviderService, ColumnHeaders.SECTIONS_SHEET_COLUMNS, sectionValues)
                 }
             }
             sectionsSheetValues.eachWithIndex {Map<String, String> sectionValues, Integer i ->
@@ -184,8 +142,8 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 throw new ApiInternalException('OC303', 'The CRF file must include a sheet "Items"')
             }
 
-            List<Map<String, String>> itemsSheetValues = workbookHandler.getSheetValues(ITEMS_SHEET_COLUMNS, itemsSheet)
-            List<Map<String, String>> groupsSheetValues = workbookHandler.getSheetValues(GROUPS_SHEET_COLUMNS, groupsSheet)
+            List<Map<String, String>> itemsSheetValues = workbookHandler.getSheetValues(ColumnHeaders.ITEMS_SHEET_COLUMN_PATTERNS, itemsSheet)
+            List<Map<String, String>> groupsSheetValues = workbookHandler.getSheetValues(ColumnHeaders.GROUPS_SHEET_COLUMN_PATTERNS, groupsSheet)
 
             List<DataClass> groups = []
             DataType ocStringDataType = dataModel.dataTypes.find {it.label == 'ST'}
@@ -193,7 +151,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 DataElement item = new DataElement(label: itemValues.itemName, description: itemValues.descriptionLabel,
                                                    dataType: dataModel.dataTypes.find {it.label == itemValues.dataType} ?: ocStringDataType, idx: i)
                     .tap {DataElement dataElement ->
-                        addMetadataFromColumnValues(dataElement, openClinicaV3CrfItemProfileProviderService, ITEMS_SHEET_COLUMNS, itemValues)
+                        addMetadataFromColumnValues(dataElement, openClinicaV3CrfItemProfileProviderService, ColumnHeaders.ITEMS_SHEET_COLUMNS, itemValues)
                     }
                 DataClass parentClass
                 if (itemValues.groupLabel) {
@@ -206,7 +164,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                         DataClass sectionClass = sections.find {it.label == itemValues.sectionLabel}
                         parentClass = new DataClass(label: itemValues.groupLabel, description: itemValues.groupHeader, idx: i)
                         Map<String, String> groupValues = groupsSheetValues.find {Map<String, String> groupValues -> groupValues.groupLabel == itemValues.groupLabel}
-                        addMetadataFromColumnValues(parentClass, openClinicaV3CrfGroupProfileProviderService, GROUPS_SHEET_COLUMNS, groupValues)
+                        addMetadataFromColumnValues(parentClass, openClinicaV3CrfGroupProfileProviderService, ColumnHeaders.GROUPS_SHEET_COLUMNS, groupValues)
                         groups << parentClass
                         sectionClass.addToDataClasses(parentClass)
                     }
