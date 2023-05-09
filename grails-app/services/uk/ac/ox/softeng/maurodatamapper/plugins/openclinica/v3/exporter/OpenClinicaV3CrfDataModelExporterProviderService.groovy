@@ -176,6 +176,18 @@ class OpenClinicaV3CrfDataModelExporterProviderService extends DataModelExporter
                 }
             }
 
+            // Create Instructions sheet
+            Sheet instructionsSheet = workbook.createSheet('Instructions')
+            ['OpenClinica CRF Design Template v3.9',
+             'This worksheet contains important additional information, tips, and best practices to help you better design your OpenClinica CRFs.',
+             '',
+             'Note: Each CRF version should be defined in its own Excel file.'].eachWithIndex {String value, Integer i ->
+                instructionsSheet.createRow(i).with {
+                    Cell cell = createCell(0)
+                    cell.setCellValue(value)
+                }
+            }
+
             new ByteArrayOutputStream().tap {ByteArrayOutputStream exportStream ->
                 workbook.write(exportStream)
             }
