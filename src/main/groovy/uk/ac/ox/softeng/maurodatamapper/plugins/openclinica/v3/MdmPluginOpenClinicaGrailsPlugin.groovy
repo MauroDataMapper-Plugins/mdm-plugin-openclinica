@@ -17,8 +17,8 @@
  */
 package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3
 
-import uk.ac.ox.softeng.maurodatamapper.plugins.forms.item.FormItemProfile
-import uk.ac.ox.softeng.maurodatamapper.plugins.forms.section.FormSectionProfile
+//import uk.ac.ox.softeng.maurodatamapper.plugins.forms.item.FormItemProfile
+//import uk.ac.ox.softeng.maurodatamapper.plugins.forms.section.FormSectionProfile
 
 import grails.plugins.Plugin
 
@@ -62,8 +62,8 @@ Import OpenClinica 3.x Case Report Forms as Data Models.
 
     Closure doWithSpring() {
         {->
-            formSectionProfile FormSectionProfile
-            formItemProfile FormItemProfile
+//            formSectionProfile FormSectionProfile
+//            formItemProfile FormItemProfile
         }
     }
 

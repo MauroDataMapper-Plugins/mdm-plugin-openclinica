@@ -3,32 +3,6 @@
     "sectionName": "Case Report Form Properties",
     "fields": [
       {
-        "fieldName": "CRF Name",
-        "metadataPropertyName": "crf_name",
-        "minMultiplicity": 1,
-        "maxMultiplicity": 1,
-        "dataType": "string",
-        "derived": false,
-        "regularExpression": ".{0,255}"
-      },
-      {
-        "fieldName": "Version",
-        "metadataPropertyName": "version",
-        "minMultiplicity": 1,
-        "maxMultiplicity": 1,
-        "dataType": "string",
-        "derived": false,
-        "regularExpression": ".{0,255}"
-      },
-      {
-        "fieldName": "Version Description",
-        "metadataPropertyName": "version_description",
-        "minMultiplicity": 1,
-        "maxMultiplicity": 1,
-        "dataType": "string",
-        "derived": false
-      },
-      {
         "fieldName": "Revision Notes",
         "metadataPropertyName": "revision_notes",
         "minMultiplicity": 1,

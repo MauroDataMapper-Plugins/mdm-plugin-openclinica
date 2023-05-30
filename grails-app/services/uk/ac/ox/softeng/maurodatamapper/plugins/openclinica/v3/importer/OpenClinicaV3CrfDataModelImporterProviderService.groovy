@@ -31,6 +31,8 @@ import uk.ac.ox.softeng.maurodatamapper.datamodel.item.DataElement
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataType
 import uk.ac.ox.softeng.maurodatamapper.datamodel.item.datatype.DataTypeService
 import uk.ac.ox.softeng.maurodatamapper.datamodel.provider.importer.DataModelImporterProviderService
+import uk.ac.ox.softeng.maurodatamapper.plugins.forms.question.FormQuestionProfileProviderService
+import uk.ac.ox.softeng.maurodatamapper.plugins.forms.section.FormSectionProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.ColumnHeaders
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.OpenClinicaV3CrfDefaultDataTypeProviderService
@@ -39,6 +41,7 @@ import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.item.OpenClin
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.crf.section.OpenClinicaV3CrfSectionProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.importer.parameters.OpenClinicaV3CrfDataModelImporterParameters
 import uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.workbook.WorkbookHandler
+import uk.ac.ox.softeng.maurodatamapper.profile.object.JsonProfile
 import uk.ac.ox.softeng.maurodatamapper.profile.object.Profile
 import uk.ac.ox.softeng.maurodatamapper.profile.provider.ProfileProviderService
 import uk.ac.ox.softeng.maurodatamapper.security.User
@@ -57,6 +60,8 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
     OpenClinicaV3CrfGroupProfileProviderService openClinicaV3CrfGroupProfileProviderService
     OpenClinicaV3CrfItemProfileProviderService openClinicaV3CrfItemProfileProviderService
     OpenClinicaV3CrfDefaultDataTypeProviderService openClinicaV3CrfDefaultDataTypeProviderService
+    FormSectionProfileProviderService formSectionProfileProviderService
+    FormQuestionProfileProviderService formQuestionProfileProviderService
 
     WorkbookHandler workbookHandler = new WorkbookHandler()
 
@@ -102,9 +107,10 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
             List<Map<String, String>> crfSheetValues = workbookHandler.getSheetValues(ColumnHeaders.CRF_SHEET_COLUMN_PATTERNS, crfSheet)
             Map<String, String> crfValues = crfSheetValues.findAll {it.crfName && it.version}.last()
 
-            dataModel = new DataModel(label: crfValues.crfName, type: DataModelType.DATA_ASSET)
-            dataTypeService.addDefaultListOfDataTypesToDataModel(dataModel, openClinicaV3CrfDefaultDataTypeProviderService.defaultListOfDataTypes)
-            addMetadataFromColumnValues(dataModel, openClinicaV3CrfProfileProviderService, ColumnHeaders.CRF_SHEET_COLUMNS, crfValues)
+            dataModel = new DataModel(label: crfValues.crfName, modelVersionTag: crfValues.version, description: crfValues.versionDescription)
+            JsonProfile crfProfile = openClinicaV3CrfProfileProviderService.getNewProfile()
+            crfProfile.allFields.find{it.metadataPropertyName == 'revision_notes'}.currentValue = crfValues.revisionNotes
+            openClinicaV3CrfProfileProviderService.storeProfileInEntity(dataModel, crfProfile, currentUser.emailAddress)
 
             // Import Sections as tree of Data Classes
             Sheet sectionsSheet = workbook.getSheet('Sections')
@@ -116,8 +122,14 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
 
             List<DataClass> sections = []
             sectionsSheetValues.eachWithIndex {Map<String, String> sectionValues, Integer i ->
-                sections << new DataClass(label: sectionValues.sectionLabel, description: sectionValues.sectionTitle, idx: i).tap {DataClass dataClass ->
-                    addMetadataFromColumnValues(dataClass, openClinicaV3CrfSectionProfileProviderService, ColumnHeaders.SECTIONS_SHEET_COLUMNS, sectionValues)
+                sections << new DataClass(label: sectionValues.sectionLabel, description: sectionValues.sectionTitle, idx: i).with {DataClass dataClass ->
+                    JsonProfile sectionProfile = formSectionProfileProviderService.getNewProfile()
+                    sectionProfile.allFields.find {it.metadataPropertyName == 'instruction'}.currentValue = sectionValues.instructions
+                    formSectionProfileProviderService.storeProfileInEntity(dataClass, sectionProfile, currentUser.emailAddress)
+                    JsonProfile ocSectionProfile = openClinicaV3CrfSectionProfileProviderService.getNewProfile()
+                    ocSectionProfile.allFields.find {it.metadataPropertyName == 'subtitle'}.currentValue = sectionValues.subtitle
+                    ocSectionProfile.allFields.find {it.metadataPropertyName == 'page_number'}.currentValue = sectionValues.pageNumber
+                    openClinicaV3CrfSectionProfileProviderService.storeProfileInEntity(dataClass, ocSectionProfile, currentUser.emailAddress)
                 }
             }
             sectionsSheetValues.eachWithIndex {Map<String, String> sectionValues, Integer i ->
@@ -148,8 +160,16 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
             DataType ocStringDataType = dataModel.dataTypes.find {it.label == 'ST'}
             itemsSheetValues.eachWithIndex {Map<String, String> itemValues, Integer i ->
                 DataElement item = new DataElement(label: itemValues.itemName, description: itemValues.descriptionLabel,
-                                                   dataType: dataModel.dataTypes.find {it.label == itemValues.dataType} ?: ocStringDataType, idx: i)
-                    .tap {DataElement dataElement ->
+                                                   dataType: dataModel.dataTypes.find {it.label == itemValues.dataType} ?: ocStringDataType, idx: i,
+                                                   minMultiplicity: itemValues.required == '1' ? 1 : 0)
+                    .with {DataElement dataElement ->
+                        JsonProfile questionProfile = formQuestionProfileProviderService.getNewProfile()
+                        questionProfile.allFields.find {it.metadataPropertyName == 'question_instruction'}.currentValue = itemValues.leftItemText
+                        questionProfile.allFields.find {it.metadataPropertyName == 'units'}.currentValue = itemValues.units
+                        questionProfile.allFields.find {it.metadataPropertyName == 'answer_instruction'}.currentValue = itemValues.rightItemText
+                        questionProfile.allFields.find {it.metadataPropertyName == 'label'}.currentValue = itemValues.questionNumber
+                        questionProfile.allFields.find {it.metadataPropertyName == 'default'}.currentValue = itemValues.defaultValue
+                        if (itemValues.itemDisplayStatus.equalsIgnoreCase('HIDE')) questionProfile.allFields.find {it.metadataPropertyName == 'style'}.currentValue = 'Hidden'
                         addMetadataFromColumnValues(dataElement, openClinicaV3CrfItemProfileProviderService, ColumnHeaders.ITEMS_SHEET_COLUMNS, itemValues)
                     }
                 DataClass parentClass
@@ -161,8 +181,14 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                     }
                     if (!parentClass) {
                         DataClass sectionClass = sections.find {it.label == itemValues.sectionLabel}
-                        parentClass = new DataClass(label: itemValues.groupLabel, description: itemValues.groupHeader, idx: i)
+                        parentClass = new DataClass(label: itemValues.groupLabel, idx: i)
                         Map<String, String> groupValues = groupsSheetValues.find {Map<String, String> groupValues -> groupValues.groupLabel == itemValues.groupLabel}
+                        parentClass.description = groupValues.groupHeader
+                        parentClass.maxMultiplicity = groupValues.groupRepeatMax.toInteger()
+                        JsonProfile groupProfile = formSectionProfileProviderService.getNewProfile()
+                        if (groupValues.groupLayout.equalsIgnoreCase('GRID')) groupProfile.allFields.find {it.metadataPropertyName == 'style'}.currentValue = 'Tabular'
+                        else if (groupValues.groupLayout.equalsIgnoreCase('NON-REPEATING')) groupProfile.allFields.find {it.metadataPropertyName == 'style'}.currentValue = 'Inline'
+                        if (groupValues.itemDisplayStatus.equalsIgnoreCase('HIDE')) groupProfile.allFields.find {it.metadataPropertyName == 'style'}.currentValue = 'Hidden'
                         addMetadataFromColumnValues(parentClass, openClinicaV3CrfGroupProfileProviderService, ColumnHeaders.GROUPS_SHEET_COLUMNS, groupValues)
                         groups << parentClass
                         sectionClass.addToDataClasses(parentClass)
@@ -191,6 +217,8 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
         }
         metadataAware
     }
+
+//    Map<String, String>
 
     @Override
     List<DataModel> importModels(User currentUser, OpenClinicaV3CrfDataModelImporterParameters importerParameters) {

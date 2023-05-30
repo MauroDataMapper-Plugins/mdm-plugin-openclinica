@@ -1,5 +1,6 @@
 dependencies {
 
+    implementation group: 'uk.ac.ox.softeng.maurodatamapper.plugins', name: 'mdm-plugin-forms', version: '1.1.0-SNAPSHOT'
     implementation group: 'org.apache.poi', name: 'poi', version: poiVersion
     implementation group: 'org.apache.poi', name: 'poi-ooxml', version: poiVersion
 

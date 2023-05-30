@@ -3,63 +3,11 @@
     "sectionName": "Group Properties",
     "fields": [
       {
-        "fieldName": "Group Label",
-        "metadataPropertyName": "group_label",
-        "minMultiplicity": 1,
-        "maxMultiplicity": 1,
-        "dataType": "string",
-        "derived": false,
-        "regularExpression": "\\S{0,255}"
-      },
-      {
-        "fieldName": "Group Layout",
-        "metadataPropertyName": "group_layout",
-        "minMultiplicity": 0,
-        "maxMultiplicity": 1,
-        "dataType": "enumeration",
-        "allowedValues": [
-          "",
-          "GRID",
-          "NON-REPEATING"
-        ],
-        "derived": false
-      },
-      {
-        "fieldName": "Group Header",
-        "metadataPropertyName": "group_header",
-        "minMultiplicity": 0,
-        "maxMultiplicity": 1,
-        "dataType": "string",
-        "derived": false,
-        "regularExpression": ".{0,255}"
-      },
-      {
         "fieldName": "Group Repeat Number",
         "metadataPropertyName": "group_repeat_number",
         "minMultiplicity": 0,
         "maxMultiplicity": 1,
         "dataType": "int",
-        "derived": false
-      },
-      {
-        "fieldName": "Group Repeat Maximum",
-        "metadataPropertyName": "group_repeat_max",
-        "minMultiplicity": 0,
-        "maxMultiplicity": 1,
-        "dataType": "int",
-        "derived": false
-      },
-      {
-        "fieldName": "Group Display Status",
-        "metadataPropertyName": "group_display_status",
-        "minMultiplicity": 0,
-        "maxMultiplicity": 1,
-        "dataType": "enumeration",
-        "allowedValues": [
-          "",
-          "SHOW",
-          "HIDE"
-        ],
         "derived": false
       }
     ]
