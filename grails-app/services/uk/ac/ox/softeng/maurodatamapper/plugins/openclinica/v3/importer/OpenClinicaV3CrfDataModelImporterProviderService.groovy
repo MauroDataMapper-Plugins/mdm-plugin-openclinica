@@ -265,7 +265,7 @@ class OpenClinicaV3CrfDataModelImporterProviderService extends DataModelImporter
                 List<String> keys = it.responseOptionsText.split(',')
                 List<String> values = it.responseValuesOrCalculations.split(',')
                 keys.eachWithIndex {key, i ->
-                    et.addToEnumerationValues(key: key, value: values[i], idx: i)
+                    et.addToEnumerationValues(key: key ?: 'NULL', value: values[i] ?: 'NULL', idx: i)
                 }
             }
         }
