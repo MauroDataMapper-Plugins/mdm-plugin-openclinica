@@ -15,7 +15,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 package uk.ac.ox.softeng.maurodatamapper.plugins.openclinica.v3.importer
 
 import uk.ac.ox.softeng.maurodatamapper.core.container.Folder
@@ -80,7 +79,7 @@ class OpenClinicaV3CrfDataModelImporterProviderServiceSpec extends BaseIntegrati
 
         then:
         item1
-        item1.dataType.label == 'ST'
+        item1.dataType.label == 'Text'
         item1.metadata.find {it.key == 'response_type'}.value == 'text'
     }
 
